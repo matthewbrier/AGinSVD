@@ -1,0 +1,97 @@
+---
+title: "Brier et al 2022, Figure 1"
+output: html_notebook
+---
+
+
+```{r}
+library(ggplot2)
+library(nlme)
+library(multcomp)
+
+### General Data I/O
+x = read.csv('SuppData_Fig1.csv')
+x$Tissue = as.factor(x$Tissue)
+x$Grp = as.factor(x$Grp)
+x$CDR = as.factor(x$CDR)
+x$AB = as.factor(x$AB)
+
+# Figure 1B
+ggplot(x, aes(x=Grp, y=FDG, fill=Tissue)) + 
+  geom_boxplot(alpha = 1,lwd=.5,fatten=.5) + 
+  ylim(-.3,2.1) + 
+  scale_fill_manual(breaks = c("1","2","3"), values = c("blue","gray","red"),labels = c("WM","GM","WML")) + 
+  scale_color_manual(breaks=c("0","1"),values = c("black","darkgoldenrod"),labels = c("Ab-","Ab+")) + 
+  scale_shape_manual(breaks=c("0","0.5"),values = c(1,17))  + ylab("SUVR") + ggtitle("CMRglc") + 
+  theme(plot.title = element_text(hjust = 0.5),legend.position = 'none',axis.title.x = element_blank(),text = element_text(size=20)) + 
+  scale_x_discrete(labels=c("HC-Y","HC-O","SVD")) + 
+  guides(fill = guide_legend(order=1)) +
+  geom_hline(yintercept = 0,color="black")
+
+# Figure 1C
+ggplot(x, aes(x=Grp, y=HO, fill=Tissue)) + 
+  geom_boxplot(alpha = 1,lwd=.5,fatten=.5) + 
+  ylim(-.3,2.1) + 
+  scale_fill_manual(breaks = c("1","2","3"), values = c("blue","gray","red"),labels = c("WM","GM","WML")) + 
+  scale_color_manual(breaks=c("0","1"),values = c("black","darkgoldenrod"),labels = c("Ab-","Ab+")) + 
+  scale_shape_manual(breaks=c("0","0.5"),values = c(1,17))  + ylab("SUVR") + ggtitle("CBF") + 
+  theme(plot.title = element_text(hjust = 0.5),legend.position = 'none',axis.title.x = element_blank(),text = element_text(size=20)) + 
+  scale_x_discrete(labels=c("HC-Y","HC-O","SVD")) + 
+  guides(fill = guide_legend(order=1)) +
+  geom_hline(yintercept = 0,color="black")
+
+# Figure 1D
+ggplot(x, aes(x=Grp, y=OM, fill=Tissue)) + 
+  geom_boxplot(alpha = 1,lwd=.5,fatten=.5) + 
+  ylim(-.3,2.1) + 
+  scale_fill_manual(breaks = c("1","2","3"), values = c("blue","gray","red"),labels = c("WM","GM","WML")) + 
+  scale_color_manual(breaks=c("0","1"),values = c("black","darkgoldenrod"),labels = c("Ab-","Ab+")) + 
+  scale_shape_manual(breaks=c("0","0.5"),values = c(1,17))  + ylab("SUVR") + ggtitle(expression(CMRO[2])) +
+  theme(plot.title = element_text(hjust = 0.5),legend.position = 'none',axis.title.x = element_blank(),text = element_text(size=20)) + 
+  scale_x_discrete(labels=c("HC-Y","HC-O","SVD")) + 
+  guides(fill = guide_legend(order=1)) +
+  geom_hline(yintercept = 0,color="black")
+
+# Figure 1E
+ggplot(x, aes(x=Grp, y=GI, fill=Tissue)) + 
+  geom_boxplot(alpha = 1,lwd=.5,fatten=.5) + 
+  ylim(-.25,.25) + 
+  scale_fill_manual(breaks = c("1","2","3"), values = c("blue","gray","red"),labels = c("WM","GM","WML")) + 
+  scale_color_manual(breaks=c("0","1"),values = c("black","darkgoldenrod"),labels = c("Ab-","Ab+")) + 
+  scale_shape_manual(breaks=c("0","0.5"),values = c(1,17))  + ylab("A.U.") + ggtitle("GI") +
+  theme(plot.title = element_text(hjust = 0.5),legend.position = c(.3,.2),axis.title.x = element_blank(),text = element_text(size=20)) + 
+  scale_x_discrete(labels=c("HC-Y","HC-O","SVD")) + 
+  guides(fill = guide_legend(order=1,ncol=3)) +
+  geom_hline(yintercept = 0,color="black")
+
+
+```
+```{r}
+tbl = read.csv("StatsFig1.csv")
+tbl$GrpTissue = as.factor(tbl$GrpTissue)
+tbl$Grp = as.factor(tbl$Grp)
+tbl$Tissue = as.factor(tbl$Tissue)
+
+lme_fdg <- lme(FDG ~ Age + Grp * Tissue,data = tbl, random = ~1|Sub)
+anova_fdg<-anova(lme_fdg)
+lme_fdg <- lme(FDG ~ Age + GrpTissue,data = tbl, random = ~1|Sub)
+glht_fdg <- summary(glht(lme_fdg,linfct = mcp(GrpTissue="Tukey")))
+
+
+lme_ho <- lme(HO ~ Age + Grp * Tissue,data = tbl, random = ~1|Sub)
+anova_ho<-anova(lme_ho)
+lme_ho <- lme(HO ~ Age + GrpTissue,data = tbl, random = ~1|Sub)
+glht_ho <- summary(glht(lme_ho,linfct = mcp(GrpTissue="Tukey")))
+
+lme_om <- lme(OM ~ Age + Grp * Tissue,data = tbl, random = ~1|Sub)
+anova_om<-anova(lme_om)
+lme_om <- lme(OM ~ Age + GrpTissue,data = tbl, random = ~1|Sub)
+glht_om <- summary(glht(lme_om,linfct = mcp(GrpTissue="Tukey")))
+
+lme_gi <- lme(GI ~ Age + Grp * Tissue,data = tbl, random = ~1|Sub)
+anova_gi<-anova(lme_gi)
+lme_gi <- lme(GI ~ Age + GrpTissue,data = tbl, random = ~1|Sub)
+glht_gi <- summary(glht(lme_gi,linfct = mcp(GrpTissue="Tukey")))
+
+```
+
